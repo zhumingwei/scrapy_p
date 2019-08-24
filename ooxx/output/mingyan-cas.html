@@ -1,0 +1,68 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+
+
+
+
+
+
+
+
+<html>
+<head>
+    <title>腾讯Bugly - 一种愉快的开发方式</title>
+</head>
+<body>
+
+    
+
+<script>
+
+    window.onload = function() {
+
+        var redirectBaseUrl = "https://graph.qq.com/oauth2.0/authorize";
+        var redirectType = 9;
+        var sn = "518e7173-821f-4df2-9936-bde74d6b90c1";
+        var callBackUrl = getUrlBase() + "?type=" + redirectType + "&sn=" + sn;
+        
+
+        switch(redirectType) {
+            case 9:
+            
+                redirectBaseUrl += "?client_id=101481973&redirect_uri=" + encodeURIComponent(callBackUrl) + "&response_type=code&state=1d082f842789270f635e016c314ee785&scope=get_user_info,add_topic,add_one_blog,add_album,upload_pic,list_album,add_share,check_page_fans,add_t,add_pic_t,del_t,get_repost_list,get_info,get_other_info,get_fanslist,get_idollist,add_idol,del_ido,get_tenpay_addr";
+
+                break;
+            default:
+                redirectBaseUrl += "?url=" + encodeURIComponent(callBackUrl);
+        }
+
+
+        function getUrlBase() {
+            switch(redirectType) {
+                case 1:
+                    //	return "http://" +window.location.hostname + getPathName() + "/qqLoginBack";
+                    return window.location.protocol +"//" +window.location.hostname + getPathName() + "/loginBack";
+                default:
+                    return window.location.protocol +"//" +window.location.hostname + window.location.port + getPathName() + "/loginBack";
+            }
+        }
+
+        function getPathName() {
+            var path = window.location.pathname;
+            var sss = "";
+            if (null != path && "" != path) {
+                var list = path.split("/");
+                if (list != null && list.length > 2) {
+                    sss = "/" + list[1];
+                }
+            }
+            return sss;
+        }
+
+        window.location.href = redirectBaseUrl;
+    }
+</script>
+</body>
+
+</html>

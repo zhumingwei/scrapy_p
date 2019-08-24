@@ -1,0 +1,4 @@
+.venv
+*.pyc
+ooxx/ooxx/__pycache__/**
+ooxx/ooxx/spiders/__pycache__/**
