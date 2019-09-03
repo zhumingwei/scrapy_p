@@ -3,3 +3,4 @@
 ooxx/ooxx/__pycache__/**
 ooxx/ooxx/spiders/__pycache__/**
 ooxx/output
+.vscode/mmcurl.sh
