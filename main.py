@@ -3,21 +3,14 @@ import numpy as py
 import sys
 import os
 import shutil
-# 获取当前脚本路径
-# dirpath = os.path.dirname(os.path.abspath(__file__))
-# print(dirpath)
-# 添加环境变量
-# sys.path.append(dirpath)
-# 启动爬虫,第三个参数为爬虫name
-# execute(['scrapy','crawl','xxoo'])
 
 oxpath = "%s/ooxx"%os.path.dirname(os.path.realpath(__file__))
 os.chdir(oxpath)
 
-# sys.path.insert(0,"%s/ooxx/spiders"%oxpath)
+sys.path.insert(0,"%s/ooxx/spiders"%oxpath)
 
 #删除output目录
-# if (os.path.exists("output")):
-#     shutil.rmtree("output") 
+if (os.path.exists("output")):
+    shutil.rmtree("output") 
 
-execute(['scrapy','crawl','ooxx'])
+execute(['scrapy','crawl','ooxx','-a' ,'search=java.lang.OutOfMemoryError'])
