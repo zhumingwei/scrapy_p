@@ -46,17 +46,24 @@ class SpiderOpenCloseLogging(object):
         if(lines):
             data = {}
             for l in lines:
-                ss = l.strip('\n').split("-")
-                if(data.get(ss[0])):
-                    data[ss[0]][ss[1]]=ss[2]
+                ss = l.strip('\n').split("-")#分号隔开 version, search ,start ,pagetotal
+                version,search,start,pagetotal = ss[0],ss[1],int(ss[2]),int(ss[3])
+
+                if(data.get(version)):
+                    lasttotal = data[version].get(search)
+                    if (lasttotal):
+                        newtotal = lasttotal + pagetotal
+                    else:
+                        newtotal = pagetotal
+                    data[version][search]=newtotal
                 else:
-                    data[ss[0]]={ss[1]:ss[2]}
+                    data[version]={search:pagetotal}
                         
-            self.save_analysis("%s\t\t%s\t\t%s\t\t%s\n"%("version","all","oom","rate"))
+            self.save_analysis("%s\t\t%s\t\t%s\t\t%s\n"%("version","all","oom","ratio"))
             for v in myconfig.versions:
                 
                 aNum = util.string2int(data[v].get("None"))
-                sNum = util.string2int(data[v].get("java.lang.OutOfMemoryError"))
+                sNum = util.string2int(data[v].get(myconfig.keyword))
                 try:
                     print ("%s-%s-%s-%s"%(v,aNum,sNum,sNum/aNum))
                     self.save_analysis("%s\t\t%s\t\t%s\t\t%s\n"%(v,aNum,sNum,sNum/aNum))

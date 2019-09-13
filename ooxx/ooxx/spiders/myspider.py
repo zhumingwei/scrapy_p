@@ -9,6 +9,9 @@ class xxoo(scrapy.Spider):
     
     name = "ooxx" # 定义蜘蛛名
     
+    def format_url(self, search_p, version_p,start=0):
+        return "https://bugly.qq.com/v2/issueList?start=%s&searchType=errorType&exceptionTypeList=Crash&pid=1&platformId=1&sortOrder=desc%s&rows=50&sortField=uploadTime&appId=24be824147&fsn=a37bd6a3-7a5f-466b-9193-b35cb976215d%s" % (start, search_p, version_p)
+    
 
     def input_url(self,version,search,urls):
         if (search):
@@ -21,7 +24,7 @@ class xxoo(scrapy.Spider):
         else :
             version_p = ""
 
-        urls.append("https://bugly.qq.com/v2/issueList?start=0&searchType=errorType&exceptionTypeList=Crash&pid=1&platformId=1&sortOrder=desc%s&rows=50&sortField=crashCount&appId=24be824147&fsn=a37bd6a3-7a5f-466b-9193-b35cb976215d%s" % (search_p, version_p))
+        urls.append(self.format_url(search_p,version_p))
 
     def spider_closed():
         print('the end')
@@ -32,7 +35,9 @@ class xxoo(scrapy.Spider):
         self.search = search
         if (not os.path.isdir(myconfig.output_file)):
             os.mkdir(myconfig.output_file)
+            os.mkdir(f"{myconfig.output_file}/resp")
         
+            
         # 定义爬取的链接
         
         urls = []
@@ -41,7 +46,7 @@ class xxoo(scrapy.Spider):
             self.input_url(v,None,urls)
 
         for url in urls:
-            print("url=%s"%url)
+            print("request url=%s"%url)
             yield scrapy.Request(url=url, callback=self.parse,headers= myconfig.header,errback=self.errback) #爬取到的页面如何处理？提交给parse方法处理
 
   
@@ -71,16 +76,44 @@ class xxoo(scrapy.Spider):
         else:
             page = "%s-%s-%s" % (version,qu['start'][0],qu['rows'][0])
             search = None
-        save_file_name = "%s/%s.json" % (myconfig.output_file, page)
+
+        if (qu.get('start')):
+            start = int(qu.get('start')[0])
+        else:
+            start = 0
+        save_file_name = f"{myconfig.output_file}/resp/{page}.json"
+        
         util.savefile(self,save_file_name,response.body)
+        json_response = util.parse_json(response.body)
+        numFoud = json_response["ret"]["numFound"]
+        if numFoud%50 >0 :
+            p = int(numFoud/50)  + 1
+        else:
+            p = int(numFoud/50)
+        ''' p 为总页数'''
+        for start in range(1, p):
+            if not search:
+                search_p = ""
+            else:
+                search_p = "&search=%s" % search
+            if (version):
+                version_p = "&version=%s" % version
+            else :
+                version_p = ""
+            url = self.format_url(search_p,version_p,50 * start)
+            print("request url=%s"%url)
+            yield scrapy.Request(url=url, callback=self.parse,headers= myconfig.header,errback=self.errback) #爬取到的页面如何处理？提交给parse方法处理
+
+
 
      
         #解析json有用的数据
-        json_response = util.parse_json(response.body)
         numFoud = json_response["ret"]["numFound"]
-
+        pagetotal = 0
+        for i in json_response["ret"]["issueList"]:
+            pagetotal = pagetotal + int(i["count"])
         with open("%s/result"%myconfig.output_file,"a") as f:
-            f.write("%s-%s-%s\n"%(version,search,numFoud))
+            f.write("%s-%s-%s-%s\n"%(version,search,start,pagetotal)) #分号隔开 version, search ,start ,pagetotal
         # page = response.url.split("/")[-2]     #根据上面的链接提取分页,如：/page/1/，提取到的就是：1
         # filename = '%s/mingyan-%s.json' % (myconfig.output_file,page)    #拼接文件名，如果是第一页，最终文件名便是：mingyan-1.html
         
@@ -96,5 +129,4 @@ class xxoo(scrapy.Spider):
         print(failure)
         pass
 
-    
     
